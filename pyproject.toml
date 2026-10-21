@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vietnorm-qlora"
+version = "0.1.0"
+description = "Research toolkit for Vietnamese social-media lexical normalization with QLoRA"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "VietNorm-QLoRA Contributors"}]
+keywords = ["vietnamese", "nlp", "lexical-normalization", "qlora", "peft"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.14,<1"]
+train = ["torch>=2.3", "transformers>=4.45", "datasets>=3", "accelerate>=1.0", "peft>=0.13", "trl>=0.12", "bitsandbytes>=0.43", "sentencepiece>=0.2"]
+
+[project.scripts]
+vietnorm = "vietnorm_qlora.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

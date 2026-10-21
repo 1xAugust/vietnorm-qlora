@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.env
+.env.*
+!.env.example
+.ipynb_checkpoints/
+# Không công bố corpus của bên thứ ba hoặc model artifacts theo mặc định
+data/processed/
+outputs/
+checkpoints/
+wandb/
+*.safetensors
+*.bin
+*.ckpt
+*.pt
+*.pth
+*.gguf

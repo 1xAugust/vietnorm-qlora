@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "Khi sử dụng phần mềm này, hãy trích dẫn repository và bài báo gốc của corpus ViLexNorm."
+title: "VietNorm-QLoRA: Vietnamese Lexical Normalization Research Toolkit"
+type: software
+authors:
+  - name: "VietNorm-QLoRA Contributors"
+version: "0.1.0"
+license: MIT
+repository-code: 'https://github.com/1xAugust/vietnorm-qlora'
+# TODO: Thay OWNER bằng tài khoản hoặc tổ chức chính thức trước lần phát hành công khai đầu tiên.

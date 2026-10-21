@@ -41,8 +41,15 @@ ViLexNorm là corpus của bên thứ ba theo giấy phép **CC BY-NC-SA 4.0**, 
 
 ```bash
 python -m pip install -e '.[train]'
-python scripts/prepare_data.py --output-dir data/processed --max-train 3000
+python scripts/prepare_data.py \
+  --revision "<full ViLexNorm commit SHA>" \
+  --output-dir data/processed \
+  --max-train 3000
 ```
+
+Thay placeholder bằng commit SHA đầy đủ của revision ViLexNorm đã duyệt cho thí nghiệm. Script
+ghi `manifest.json` cạnh `train.jsonl`, `dev.jsonl` và `test.jsonl`; manifest chứa provenance,
+schema đầu vào và số hàng trước/sau subset, nhưng không chứa nội dung từng hàng của corpus.
 
 Script tải `visolex/ViLexNorm` từ Hugging Face và lọc trường `type` để giữ membership `train`, `dev` và `test`. Các file prompt/completion sinh ra nằm trong thư mục được Git bỏ qua. Script không dùng test examples để training.
 

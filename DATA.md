@@ -20,6 +20,22 @@ Bản Hugging Face hợp nhất dữ liệu vào một split vật lý và dùng
 - số lượng hàng sau khi lọc, loại trùng hoặc lấy subset;
 - command và seed đã dùng để tạo dữ liệu đầu vào.
 
+Pin revision bằng commit SHA đầy đủ thay vì dùng nhánh di động:
+
+```bash
+python scripts/prepare_data.py \
+  --revision "<full ViLexNorm commit SHA>" \
+  --output-dir data/processed \
+  --max-train 3000 \
+  --seed 42
+```
+
+`data/processed/manifest.json` ghi dataset identifier, revision được yêu cầu, revision đã resolve
+khi loader cung cấp được, fingerprint, seed, `max_train`, schema đầu vào, các giá trị `type` duy
+nhất và count trước/sau subset cho cả `train`, `dev` và `test`. Manifest không chứa nội dung hàng
+corpus; nếu loader không cung cấp revision đã resolve và giá trị yêu cầu không phải full commit
+SHA thì trường `resolved_revision` là `null`.
+
 Không thay đổi schema, ý nghĩa trường hoặc membership của split mà không có Issue, đánh giá tác động và cập nhật tài liệu. Output mặc định của `scripts/prepare_data.py` nằm tại `data/processed/` và không được commit.
 
 ## Phòng tránh data leakage

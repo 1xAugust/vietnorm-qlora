@@ -47,10 +47,29 @@ def main(argv: Sequence[str] | None = None) -> None:
     p.add_argument("--output-dir", type=Path, default=Path("data/processed"))
     p.add_argument("--max-train", type=int, default=3000, help="0 means all training rows")
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--audit",
+        action="store_true",
+        help="Run data leakage and collision audit after preparing splits",
+    )
+    p.add_argument(
+        "--near-threshold",
+        type=float,
+        default=0.85,
+        help="Similarity threshold for Vietnamese near-duplicates (default: 0.85)",
+    )
     args = p.parse_args(argv)
 
     if args.max_train < 0:
         p.error("--max-train must be nonnegative")
+
+    from vietnorm_qlora.audit import NearDuplicateConfig, audit_splits, validate_threshold
+
+    try:
+        validate_threshold(args.near_threshold)
+    except ValueError as e:
+        p.error(str(e))
+
     from datasets import load_dataset
 
     all_rows = load_dataset(args.dataset, split="train", revision=args.revision)
@@ -109,6 +128,26 @@ def main(argv: Sequence[str] | None = None) -> None:
         "unique_type_values": sorted(unique_type_values),
         "split_counts": split_counts,
     }
+    if args.audit:
+        split_records = {
+            name: [{"original": r["original"], "normalized": r["normalized"]} for r in rows]
+            for name, rows in splits.items()
+        }
+        config = NearDuplicateConfig(threshold=args.near_threshold)
+        audit_res = audit_splits(
+            split_records,
+            config=config,
+            manifest_data=manifest,
+            manifest_path=args.output_dir / "manifest.json",
+        )
+        manifest["data_leakage_audit"] = {
+            "status": audit_res["status"],
+            "has_leakage": audit_res["has_leakage"],
+            "near_duplicate_config": audit_res["near_duplicate_config"],
+            "cross_split_collisions": audit_res["cross_split_audit"],
+            "internal_collisions": audit_res["internal_audit"],
+            "collision_totals": audit_res["collision_totals"],
+        }
     manifest_path = args.output_dir / "manifest.json"
     with manifest_path.open("w", encoding="utf-8", newline="\n") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2, sort_keys=True)

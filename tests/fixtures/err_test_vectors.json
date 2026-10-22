@@ -1,0 +1,407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VietNorm Synthetic ERR Test Vectors",
+  "description": "Test vectors tong hop cho Issue #6 va Issue #7 de kiem thu Error Reduction Rate (ERR). Du lieu 100% tong hop, khong sao chep ViLexNorm.",
+  "tokenization_convention": "unicodedata.normalize('NFKC', text).strip().split()",
+  "accuracy_convention": "max(0.0, 1.0 - token_levenshtein_distance(seq, gold) / len(gold))",
+  "vectors": [
+    {
+      "vector_id": "V01_lai_baseline",
+      "scenario": "Baseline Leave-As-Is (LAI)",
+      "description": "He thong giu nguyen van ban goc, ERR phai bang 0.0 theo dung dinh nghia toan hoc.",
+      "source_text": "hnay đi hok vui",
+      "gold_text": "hôm nay đi học vui",
+      "prediction_text": "hnay đi hok vui",
+      "source_tokens": ["hnay", "đi", "hok", "vui"],
+      "gold_tokens": ["hôm", "nay", "đi", "học", "vui"],
+      "prediction_tokens": ["hnay", "đi", "hok", "vui"],
+      "token_distances": {
+        "baseline_distance": 3,
+        "system_distance": 3,
+        "gold_length": 5
+      },
+      "baseline_accuracy": 0.4,
+      "system_accuracy": 0.4,
+      "expected_err": 0.0,
+      "err_status": "exact",
+      "target_events": [
+        {
+          "source_span": [0, 1],
+          "source_tokens": ["hnay"],
+          "replacement_tokens": ["hôm", "nay"]
+        },
+        {
+          "source_span": [2, 3],
+          "source_tokens": ["hok"],
+          "replacement_tokens": ["học"]
+        }
+      ],
+      "predicted_events": [],
+      "correction_events": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 2,
+        "tn": 2
+      },
+      "precision": null,
+      "precision_status": "undefined_no_predictions",
+      "recall": 0.0,
+      "recall_status": "exact",
+      "notes": "LAI baseline co ERR = 0.0. Hai su kien can sua la 'hnay' -> 'hôm nay' va 'hok' -> 'học' deu bi bo sot (FN=2). He thong khong de xuat can thiep nao nen Precision la null.",
+      "proposed_convention": "Levenshtein token accuracy: D(S,G)=3, len(G)=5 -> acc=0.4."
+    },
+    {
+      "vector_id": "V02_positive_err",
+      "scenario": "Positive ERR - Cai thien mot phan",
+      "description": "He thong sua dung span 1-n (hnay -> hôm nay), giu nguyen cac tu dung, chua sua duoc hok -> học.",
+      "source_text": "hnay đi hok vui",
+      "gold_text": "hôm nay đi học vui",
+      "prediction_text": "hôm nay đi hok vui",
+      "source_tokens": ["hnay", "đi", "hok", "vui"],
+      "gold_tokens": ["hôm", "nay", "đi", "học", "vui"],
+      "prediction_tokens": ["hôm", "nay", "đi", "hok", "vui"],
+      "token_distances": {
+        "baseline_distance": 3,
+        "system_distance": 1,
+        "gold_length": 5
+      },
+      "baseline_accuracy": 0.4,
+      "system_accuracy": 0.8,
+      "expected_err": 0.666667,
+      "err_status": "exact",
+      "target_events": [
+        {
+          "source_span": [0, 1],
+          "source_tokens": ["hnay"],
+          "replacement_tokens": ["hôm", "nay"]
+        },
+        {
+          "source_span": [2, 3],
+          "source_tokens": ["hok"],
+          "replacement_tokens": ["học"]
+        }
+      ],
+      "predicted_events": [
+        {
+          "source_span": [0, 1],
+          "source_tokens": ["hnay"],
+          "replacement_tokens": ["hôm", "nay"]
+        }
+      ],
+      "correction_events": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "tn": 2
+      },
+      "precision": 1.0,
+      "precision_status": "exact",
+      "recall": 0.5,
+      "recall_status": "exact",
+      "notes": "ERR = (0.8 - 0.4) / (1.0 - 0.4) = 0.4 / 0.6 = 2/3 xap xi 0.666667. Su kien 'hnay' duoc sua dung (TP=1), 'hok' chua sua (FN=1).",
+      "proposed_convention": "D(P,G)=1 -> acc_sys=0.8."
+    },
+    {
+      "vector_id": "V03_negative_err",
+      "scenario": "Negative ERR - He thong sua bua",
+      "description": "He thong khong sua duoc loi ma con lam hong cac tu von da dung (đi -> chay, vui -> buon).",
+      "source_text": "hnay đi hok vui",
+      "gold_text": "hôm nay đi học vui",
+      "prediction_text": "hnay chạy hok buồn",
+      "source_tokens": ["hnay", "đi", "hok", "vui"],
+      "gold_tokens": ["hôm", "nay", "đi", "học", "vui"],
+      "prediction_tokens": ["hnay", "chạy", "hok", "buồn"],
+      "token_distances": {
+        "baseline_distance": 3,
+        "system_distance": 5,
+        "gold_length": 5
+      },
+      "baseline_accuracy": 0.4,
+      "system_accuracy": 0.0,
+      "expected_err": -0.666667,
+      "err_status": "exact",
+      "target_events": [
+        {
+          "source_span": [0, 1],
+          "source_tokens": ["hnay"],
+          "replacement_tokens": ["hôm", "nay"]
+        },
+        {
+          "source_span": [2, 3],
+          "source_tokens": ["hok"],
+          "replacement_tokens": ["học"]
+        }
+      ],
+      "predicted_events": [
+        {
+          "source_span": [1, 2],
+          "source_tokens": ["đi"],
+          "replacement_tokens": ["chạy"]
+        },
+        {
+          "source_span": [3, 4],
+          "source_tokens": ["vui"],
+          "replacement_tokens": ["buồn"]
+        }
+      ],
+      "correction_events": {
+        "tp": 0,
+        "fp": 2,
+        "fn": 2,
+        "tn": 0
+      },
+      "precision": 0.0,
+      "precision_status": "exact",
+      "recall": 0.0,
+      "recall_status": "exact",
+      "notes": "ERR = (0.0 - 0.4) / (1.0 - 0.4) = -0.4 / 0.6 = -2/3 xap xi -0.666667. Hai su kien can sua bi bo qua (FN=2), hai tu sach bi sua sai (FP=2).",
+      "proposed_convention": "Negative ERR phan anh trung thuc su giam sut chat luong so voi baseline."
+    },
+    {
+      "vector_id": "V04_align_1_to_n",
+      "scenario": "Can chinh 1-n (Tach tu)",
+      "description": "1 token nguon viet tat đky tach thanh 2 token chuẩn hóa đăng ký, he thong dat ERR 1.0.",
+      "source_text": "tôi đky môn này",
+      "gold_text": "tôi đăng ký môn này",
+      "prediction_text": "tôi đăng ký môn này",
+      "source_tokens": ["tôi", "đky", "môn", "này"],
+      "gold_tokens": ["tôi", "đăng", "ký", "môn", "này"],
+      "prediction_tokens": ["tôi", "đăng", "ký", "môn", "này"],
+      "token_distances": {
+        "baseline_distance": 2,
+        "system_distance": 0,
+        "gold_length": 5
+      },
+      "baseline_accuracy": 0.6,
+      "system_accuracy": 1.0,
+      "expected_err": 1.0,
+      "err_status": "exact",
+      "target_events": [
+        {
+          "source_span": [1, 2],
+          "source_tokens": ["đky"],
+          "replacement_tokens": ["đăng", "ký"]
+        }
+      ],
+      "predicted_events": [
+        {
+          "source_span": [1, 2],
+          "source_tokens": ["đky"],
+          "replacement_tokens": ["đăng", "ký"]
+        }
+      ],
+      "correction_events": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 3
+      },
+      "precision": 1.0,
+      "precision_status": "exact",
+      "recall": 1.0,
+      "recall_status": "exact",
+      "notes": "D(S,G)=2 (đky -> đăng ký mat 1 sub + 1 ins) -> base_acc = 1 - 2/5 = 0.6. D(P,G)=0 -> sys_acc=1.0. ERR = (1.0 - 0.6)/(1.0 - 0.6) = 1.0. 1 su kien 1-n duoc sua dung (TP=1).",
+      "proposed_convention": "1-n duoc danh gia qua token Levenshtein va event span 'đky' -> 'đăng ký'."
+    },
+    {
+      "vector_id": "V05_align_n_to_1",
+      "scenario": "Can chinh n-1 (Gop tu)",
+      "description": "2 token nguon bi tach roi r va at duoc he thong gop dung thanh rat, dat ERR 1.0.",
+      "source_text": "tôi thấy r ất vui",
+      "gold_text": "tôi thấy rất vui",
+      "prediction_text": "tôi thấy rất vui",
+      "source_tokens": ["tôi", "thấy", "r", "ất", "vui"],
+      "gold_tokens": ["tôi", "thấy", "rất", "vui"],
+      "prediction_tokens": ["tôi", "thấy", "rất", "vui"],
+      "token_distances": {
+        "baseline_distance": 2,
+        "system_distance": 0,
+        "gold_length": 4
+      },
+      "baseline_accuracy": 0.5,
+      "system_accuracy": 1.0,
+      "expected_err": 1.0,
+      "err_status": "exact",
+      "target_events": [
+        {
+          "source_span": [2, 4],
+          "source_tokens": ["r", "ất"],
+          "replacement_tokens": ["rất"]
+        }
+      ],
+      "predicted_events": [
+        {
+          "source_span": [2, 4],
+          "source_tokens": ["r", "ất"],
+          "replacement_tokens": ["rất"]
+        }
+      ],
+      "correction_events": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 3
+      },
+      "precision": 1.0,
+      "precision_status": "exact",
+      "recall": 1.0,
+      "recall_status": "exact",
+      "notes": "D(S,G)=2 vi token thua trong baseline tao them 1 del, len(G)=4 -> base_acc = 1 - 2/4 = 0.5. D(P,G)=0 -> sys_acc=1.0. ERR = (1.0 - 0.5)/(1.0 - 0.5) = 1.0. 1 su kien gop n-1 thanh cong (TP=1).",
+      "proposed_convention": "Token Levenshtein distance xu ly day du ca token nguon thua trong baseline."
+    },
+    {
+      "vector_id": "V06_insert_delete",
+      "scenario": "Hien tuong Chen va Bo sot (Phat insertion)",
+      "description": "He thong bo sot tu rat dong thoi chen 2 tu thuc su, bi phat vi chen token thua, ERR = -1.0.",
+      "source_text": "hôm nay trời đẹp",
+      "gold_text": "hôm nay trời rất đẹp",
+      "prediction_text": "hôm nay trời thực sự đẹp",
+      "source_tokens": ["hôm", "nay", "trời", "đẹp"],
+      "gold_tokens": ["hôm", "nay", "trời", "rất", "đẹp"],
+      "prediction_tokens": ["hôm", "nay", "trời", "thực", "sự", "đẹp"],
+      "token_distances": {
+        "baseline_distance": 1,
+        "system_distance": 2,
+        "gold_length": 5
+      },
+      "baseline_accuracy": 0.8,
+      "system_accuracy": 0.6,
+      "expected_err": -1.0,
+      "err_status": "exact",
+      "target_events": [
+        {
+          "source_span": [3, 3],
+          "source_tokens": [],
+          "replacement_tokens": ["rất"]
+        }
+      ],
+      "predicted_events": [
+        {
+          "source_span": [3, 3],
+          "source_tokens": [],
+          "replacement_tokens": ["thực", "sự"]
+        }
+      ],
+      "correction_events": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4
+      },
+      "precision": 0.0,
+      "precision_status": "exact",
+      "recall": 0.0,
+      "recall_status": "exact",
+      "notes": "Baseline thieu 'rất' nen D=1, acc=0.8. Prediction thieu 'rất' va chen 'thực sự' nen D=2, acc=0.6. ERR = (0.6 - 0.8)/(1.0 - 0.8) = -0.2/0.2 = -1.0.",
+      "proposed_convention": "Cong thuc max(0, 1 - dist/|gold|) phat chinh xac cac token chen thua."
+    },
+    {
+      "vector_id": "V07_unchanged_clean",
+      "scenario": "Cau khong doi - Sach hoan toan",
+      "description": "Cau goc 100% chuan, he thong giu nguyen 100%, mau so bang 0. Day la stress test cua du an, paper ViLexNorm da loc bo cau sach.",
+      "source_text": "thời tiết hôm nay rất đẹp",
+      "gold_text": "thời tiết hôm nay rất đẹp",
+      "prediction_text": "thời tiết hôm nay rất đẹp",
+      "source_tokens": ["thời", "tiết", "hôm", "nay", "rất", "đẹp"],
+      "gold_tokens": ["thời", "tiết", "hôm", "nay", "rất", "đẹp"],
+      "prediction_tokens": ["thời", "tiết", "hôm", "nay", "rất", "đẹp"],
+      "token_distances": {
+        "baseline_distance": 0,
+        "system_distance": 0,
+        "gold_length": 6
+      },
+      "baseline_accuracy": 1.0,
+      "system_accuracy": 1.0,
+      "expected_err": 0.0,
+      "err_status": "zero_denominator_clean",
+      "target_events": [],
+      "predicted_events": [],
+      "correction_events": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 6
+      },
+      "precision": null,
+      "precision_status": "undefined_no_predictions",
+      "recall": null,
+      "recall_status": "undefined_no_targets",
+      "notes": "Mau so 1 - 1.0 = 0. He thong giu nguyen cau sach nen quy uoc ERR = 0.0 o sentence-level. Khong co su kien can sua nen Precision va Recall deu la null.",
+      "proposed_convention": "Cau sach 100% duoc giu sach gan ERR = 0.0 o sentence-level; Precision va Recall tra ve null kem status ro rang."
+    },
+    {
+      "vector_id": "V08_zero_denom_clean",
+      "scenario": "Denominator Zero - Giu nguyen sach",
+      "description": "Kiem chung doc lap truong hop chia cho 0 khi baseline = 1.0 va system = 1.0. Stress test du an.",
+      "source_text": "học sinh chăm chỉ",
+      "gold_text": "học sinh chăm chỉ",
+      "prediction_text": "học sinh chăm chỉ",
+      "source_tokens": ["học", "sinh", "chăm", "chỉ"],
+      "gold_tokens": ["học", "sinh", "chăm", "chỉ"],
+      "prediction_tokens": ["học", "sinh", "chăm", "chỉ"],
+      "token_distances": {
+        "baseline_distance": 0,
+        "system_distance": 0,
+        "gold_length": 4
+      },
+      "baseline_accuracy": 1.0,
+      "system_accuracy": 1.0,
+      "expected_err": 0.0,
+      "err_status": "zero_denominator_clean",
+      "target_events": [],
+      "predicted_events": [],
+      "correction_events": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 4
+      },
+      "precision": null,
+      "precision_status": "undefined_no_predictions",
+      "recall": null,
+      "recall_status": "undefined_no_targets",
+      "notes": "Mau so 1.0 - 1.0 = 0.0. ERR quy uoc la 0.0. TP+FP=0 nen Precision la null; TP+FN=0 nen Recall la null.",
+      "proposed_convention": "Trang thai zero_denominator_clean, P/R la null kem status."
+    },
+    {
+      "vector_id": "V09_zero_denom_degraded",
+      "scenario": "Denominator Zero - Lam hong cau sach",
+      "description": "Kiem chung truong hop khi baseline = 1.0 nhung model sua bua lam hong cau sach. Hai substitutions lien nhau tren span [2, 4] hop thanh 1 FP event.",
+      "source_text": "học sinh chăm chỉ",
+      "gold_text": "học sinh chăm chỉ",
+      "prediction_text": "học sinh lười biếng",
+      "source_tokens": ["học", "sinh", "chăm", "chỉ"],
+      "gold_tokens": ["học", "sinh", "chăm", "chỉ"],
+      "prediction_tokens": ["học", "sinh", "lười", "biếng"],
+      "token_distances": {
+        "baseline_distance": 0,
+        "system_distance": 2,
+        "gold_length": 4
+      },
+      "baseline_accuracy": 1.0,
+      "system_accuracy": 0.5,
+      "expected_err": null,
+      "err_status": "zero_denominator_degraded",
+      "target_events": [],
+      "predicted_events": [
+        {
+          "source_span": [2, 4],
+          "source_tokens": ["chăm", "chỉ"],
+          "replacement_tokens": ["lười", "biếng"]
+        }
+      ],
+      "correction_events": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "tn": 2
+      },
+      "precision": 0.0,
+      "precision_status": "exact",
+      "recall": null,
+      "recall_status": "undefined_no_targets",
+      "notes": "Tử số là 0.5 - 1.0 = -0.5, mẫu số là 0.0 -> Sentence-level là null / undefined. Hai substitutions liền nhau tạo thành 1 contiguous FP event trên span [2, 4], nên TP=0, FP=1 -> Precision = 0.0. Do không có target nào cần sửa nên Recall là null.",
+      "proposed_convention": "ERR sentence-level la null voi status zero_denominator_degraded. 2 substitutions lien nhau la 1 FP event. Precision = 0.0, Recall = null."
+    }
+  ]
+}

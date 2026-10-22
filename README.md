@@ -53,6 +53,23 @@ schema đầu vào và số hàng trước/sau subset, nhưng không chứa nộ
 
 Script tải `visolex/ViLexNorm` từ Hugging Face và lọc trường `type` để giữ membership `train`, `dev` và `test`. Các file prompt/completion sinh ra nằm trong thư mục được Git bỏ qua. Script không dùng test examples để training.
 
+## Kiểm tra duplicate và data leakage
+
+Sau khi chuẩn bị các split, chạy audit bắt buộc để phát hiện duplicate nội bộ và data leakage chéo split trước khi huấn luyện hoặc benchmark:
+
+```bash
+python scripts/audit_data.py --data-dir data/processed --update-manifest
+# hoặc dùng CLI tiện ích:
+python -m vietnorm_qlora audit --data-dir data/processed
+```
+
+Pipeline audit kiểm tra deterministic:
+- Trùng lặp nội bộ từng split: trùng cặp đầy đủ `(original, normalized)`, cùng `original` nhưng khác `normalized` (`inconsistent_target`), và near-duplicate;
+- Trùng lặp chéo split giữa `train-dev`, `train-test`, `dev-test`: exact `original`, exact `normalized`, exact full pair, `inconsistent_target`, và near-duplicate input;
+- Near-duplicate Unicode tiếng Việt: chuẩn hóa Unicode NFC, case-folding, gộp khoảng trắng thừa và tính normalized Levenshtein similarity với threshold mặc định `0.85` (cấu hình được qua `--near-threshold`);
+- An toàn dữ liệu: báo cáo tổng hợp chỉ xuất số lượng count, mặc định không để lộ raw text của dataset;
+- Exit behavior: trả exit code `0` khi sạch (PASS) và exit code khác `0` (`1`) khi phát hiện leakage (FAIL).
+
 ## Huấn luyện QLoRA (GPU / thử nghiệm)
 
 Chỉ chạy trên CUDA GPU phù hợp, ví dụ Colab T4 đã được cấp phát, sau khi kiểm tra môi trường và ghi lại đầy đủ dependency versions. Không chạy công thức này trên máy chỉ có CPU hoặc máy có 8 GB RAM.

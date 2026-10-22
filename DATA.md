@@ -43,7 +43,25 @@ Không thay đổi schema, ý nghĩa trường hoặc membership của split mà
 - Chỉ dùng `train` để fit parameters; dùng `dev` để chọn checkpoint, prompt hoặc hyperparameters.
 - Không dùng `test` để điều chỉnh prompt, chọn checkpoint, quyết định stopping hoặc sửa pipeline dựa trên từng mẫu.
 - Chỉ chạy đánh giá cuối trên `test` sau khi cấu hình đã được cố định.
-- Kiểm tra exact duplicate và near-duplicate giữa các split trước khi công bố kết quả; ghi lại phương pháp và số lượng phát hiện.
+- Bắt buộc chạy audit kiểm tra duplicate và cross-split leakage trên dữ liệu cục bộ trước khi benchmark hoặc huấn luyện:
+  ```bash
+  python scripts/audit_data.py --data-dir data/processed --update-manifest
+  ```
+- **Quy trình và phân loại collision**:
+  - **Internal duplicate (nội bộ split)**: kiểm tra duplicate full pair `(original, normalized)` trong từng split, và phát hiện trường hợp cùng `original` nhưng `normalized` khác nhau (`inconsistent_target`).
+  - **Cross-split leakage (chéo split)**: kiểm tra các cặp `train-dev`, `train-test`, `dev-test` theo:
+    - `exact_full_pair`: trùng cả `original` và `normalized`;
+    - `exact_original`: trùng input `original`;
+    - `inconsistent_target`: cùng input `original` nhưng khác target `normalized`;
+    - `exact_normalized`: trùng target `normalized`;
+    - `near_duplicate_original`: near-duplicate giữa các input chéo split.
+  - **Phương pháp near-duplicate cho tiếng Việt**:
+    - Chuẩn hóa canonical Unicode NFC (`unicodedata.normalize('NFC', ...)`), lowercasing và gộp khoảng trắng liên tiếp;
+    - Đo độ tương đồng bằng normalized Levenshtein similarity: $1.0 - \frac{\text{edit\_distance}}{\max(\text{len}_1, \text{len}_2)}$;
+    - Threshold mặc định là `0.85` (cấu hình được qua `--near-threshold`).
+  - **Bảo mật và an toàn dữ liệu**: báo cáo mặc định không xuất nội dung raw text của hàng dữ liệu nhằm tuân thủ điều kiện bản quyền ViLexNorm và tránh rò rỉ dữ liệu.
+  - **Trạng thái và exit code**: fixture/split sạch trả trạng thái `PASS` và exit code `0`; nếu phát hiện duplicate/leakage, trả trạng thái `FAIL` và exit code `1`.
+  - **Ghi nhận vào manifest**: cờ `--update-manifest` ghi cấu hình near-duplicate, trạng thái audit và số lượng collision trực tiếp vào `manifest.json`.
 - Không đưa nội dung dataset có giấy phép hạn chế hoặc dữ liệu cá nhân vào Issue, log, fixture, prompt mẫu hay Pull Request.
 
 ## Fixture trong repository
